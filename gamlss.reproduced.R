@@ -21,33 +21,6 @@ conflict_prefer("lag", "dplyr")
 
 options(scipen=8,digits=7)
 
-###############################################################################################################
-staid <- c('12134500','12148500','12142000','12141300','12143400',
-           '12145500','12144500','12149000','12115000','12115500',
-           '12117000','12147600')
-staname <- c('Skykomish','Tolt','NF Snoqualmie','MF Snoqualmie','SF Snoqualmie',
-             'Raging','Snoqualmie nr Snoqualmie','Snoqualmie nr Carnation','Cedar River nr Cedar Falls',
-             'Rex River nr Cedar Falls','Taylor River nr Selleck','SF Tolt nr Index')
-
-# Remove Quinalt due to upstream storage (Lake Quinault)
-# Remove Wilson and Nehalem because too far south (in Oregon)
-# staname <- c('Dungeness','Quinault','Satsop','Naselle','Nehalem','Wilson')
-staname <- c(staname,'Dungeness','Satsop','Naselle')
-# staid <- c('12048000','12039500','12035000','12010000','14301000','14301500')
-staid <- c(staid,'12048000','12035000','12010000')
-
-# Queets 12040500 - 1931-2021 + huge gap in daily mean flow, odd, but smaller gap in inst. pk Q
-staname <- c(staname,'Sauk abv White Chuck','NF Stillaguamish',
-             'Puyallup at Puyallup','Sauk nr Sauk','NF Skokomish',
-             'Queets')
-staid <- c(staid,'12186000','12167000',
-           '12101500','12189500','12056500',
-           '12040500')
-usgs <- data.frame(site_no = staid, basin = staname)
-
-staid <- c('11377100')
-staname <- c('Sacramento')
-usgs <- data.frame(site_no = staid, basin = staname)
 ##############################################################################################################
 # shape files created by streamstats_app.R
 
@@ -56,73 +29,72 @@ file_list <- list.files("./rivers2_shp", pattern = "*mento.shp", full.names = TR
 ########################################################################
 ########################################################################
 ### winter precipitation Oct-Mar 
+### use this in conjuction with prism_get.R 
+### and streamstats_app.R
+### to delineate basins and export delineation to /rivers2_shp and
+### to get and process your own precipitation data
 ########################################################################
-prism_set_dl_dir('C:/prismtmp')
+# prism_set_dl_dir('C:/prismtmp')
+# 
+# # function to extract mean annual precipitation
+# mean_grid_function<-function(shp_in,rasin,prj){ # the input should be the shapefile
+#   # shp<-shapefile(name) #convert to shapefile object
+#   shp_in<-st_transform(shp_in,st_crs(rasin)) #reproject shape
+#   pavg <- raster::extract(rasin,shp_in,fun=mean, na.rm = TRUE) #get spatially averaged rainfall
+#   return(pavg)
+# }
+# 
+# output.ppt <- NULL
+# output.tmean <- NULL
+# for(shape in file_list){
+#   shp_in <- st_read(shape)
+#   
+#   for(yr in 1929:2021){
+#     for (mo in 1:12){
+#       
+#       ppt <- raster(pd_to_file(prism_archive_subset("ppt", "monthly", years = yr, mon = mo)))
+#       tmean <- raster(pd_to_file(prism_archive_subset("tmean", "monthly", years = yr, mon = mo)))
+#       prj<-toString(crs(ppt)) #get raster projection
+#       dum <- mean_grid_function(shp_in,ppt,prj)
+#       
+#       dum <- dum/25.4
+#       names(dum)[1]<- 'Prec_in'
+#       dum <- data.frame(Prec_in = dum)
+#       # samm_basins <- filter(Sammamish@data,WTRSHD_NAM == 'Sammamish River')
+#       dum <- bind_cols(shp_in,dum)
+#       dum$Year <- yr
+#       dum$Month <- mo
+#       dum$shape <- shape
+#       dum$basin <- substr(shape,15,nchar(shape)-4)
+#       
+#       output.ppt <- bind_rows(output.ppt,dum)
+# 
+#       dum <- mean_grid_function(shp_in,tmean,prj)
+#       
+#       names(dum)[1]<- 'Tmean'
+#       dum <- data.frame(Tmean = dum)
+#       # samm_basins <- filter(Sammamish@data,WTRSHD_NAM == 'Sammamish River')
+#       dum <- bind_cols(shp_in,dum)
+#       dum$Year <- yr
+#       dum$Month <- mo
+#       dum$shape <- shape
+#       dum$basin <- substr(shape,15,nchar(shape)-4)
+#       
+#       output.tmean <- bind_rows(output.tmean,dum)
+#       
+#       print(paste0(shape,' ',yr,' ',mo))
+#       
+#     }
+#   }
+# }
 
-# function to extract mean annual precipitation
-mean_grid_function<-function(shp_in,rasin,prj){ # the input should be the shapefile
-  # shp<-shapefile(name) #convert to shapefile object
-  shp_in<-st_transform(shp_in,st_crs(rasin)) #reproject shape
-  pavg <- raster::extract(rasin,shp_in,fun=mean, na.rm = TRUE) #get spatially averaged rainfall
-  return(pavg)
-}
+# output.ppt <- left_join(output.ppt,usgs,by="basin")
+# output.tmean <- left_join(output.tmean,usgs,by="basin")
 
-output.ppt <- NULL
-output.tmean <- NULL
-for(shape in file_list){
-  shp_in <- st_read(shape)
-  
-  for(yr in 1929:2021){
-    for (mo in 1:12){
-      
-      ppt <- raster(pd_to_file(prism_archive_subset("ppt", "monthly", years = yr, mon = mo)))
-      tmean <- raster(pd_to_file(prism_archive_subset("tmean", "monthly", years = yr, mon = mo)))
-      prj<-toString(crs(ppt)) #get raster projection
-      dum <- mean_grid_function(shp_in,ppt,prj)
-      
-      dum <- dum/25.4
-      names(dum)[1]<- 'Prec_in'
-      dum <- data.frame(Prec_in = dum)
-      # samm_basins <- filter(Sammamish@data,WTRSHD_NAM == 'Sammamish River')
-      dum <- bind_cols(shp_in,dum)
-      dum$Year <- yr
-      dum$Month <- mo
-      dum$shape <- shape
-      dum$basin <- substr(shape,15,nchar(shape)-4)
-      
-      output.ppt <- bind_rows(output.ppt,dum)
-
-      dum <- mean_grid_function(shp_in,tmean,prj)
-      
-      names(dum)[1]<- 'Tmean'
-      dum <- data.frame(Tmean = dum)
-      # samm_basins <- filter(Sammamish@data,WTRSHD_NAM == 'Sammamish River')
-      dum <- bind_cols(shp_in,dum)
-      dum$Year <- yr
-      dum$Month <- mo
-      dum$shape <- shape
-      dum$basin <- substr(shape,15,nchar(shape)-4)
-      
-      output.tmean <- bind_rows(output.tmean,dum)
-      
-      print(paste0(shape,' ',yr,' ',mo))
-      
-    }
-  }
-}
-
-output.ppt <- left_join(output.ppt,usgs,by="basin")
-output.tmean <- left_join(output.tmean,usgs,by="basin")
-  
-saveRDS(output.ppt, 'output.ppt.rds')
-saveRDS(output.tmean, 'output.tmean.rds')
-output.ppt <- readRDS('output.ppt.rds')
-output.tmean <- readRDS('output.tmean.rds')
-
-saveRDS(output.ppt, 'output.ppt.sacramento.rds')
-saveRDS(output.tmean, 'output.tmean.sacramento.rds')
-output.ppt <- readRDS('output.ppt.sacramento.rds')
-output.tmean <- readRDS('output.tmean.sacramento.rds')
+# saveRDS(output.ppt, './data/processed/output.ppt.sacramento.rds')
+# saveRDS(output.tmean, './data/processed/output.tmean.sacramento.rds')
+output.ppt <- readRDS('./data/processed/output.ppt.sacramento.rds')
+output.tmean <- readRDS('./data/processed/output.tmean.sacramento.rds')
 
 ggplot(output.ppt %>% mutate(Date = as.Date(paste(Year,Month,15,sep="-"))),aes(Date,Prec_in)) +
   geom_line() +
@@ -132,6 +104,7 @@ ggplot(output.tmean %>% mutate(Date = as.Date(paste(Year,Month,15,sep="-"))),aes
   geom_line() +
   facet_wrap(~basin)
 
+# as in Kim and Villarini (2023)
 output.ppt <- output.ppt %>% data.frame() %>% mutate(Season1 = ifelse(Month %in% c(12,1,2),'DJF_ppt',
                                                              ifelse(Month %in% c(3,4,5),'MAM_ppt',
                                                                     ifelse(Month %in% c(6,7,8),"JJA_ppt",
@@ -153,16 +126,6 @@ output.tmean <- output.tmean %>% data.frame() %>% mutate(Season1 = ifelse(Month 
                                                                                     ifelse(Month %in% c(10,11,12),'OND_tmean',NA)))),
                                                      waterYear2 = ifelse(Month>9,Year + 1, Year))
 
-out.annual <- output %>% group_by(basin,shape,Shape_Area,waterYear2) %>% 
-  summarize(Prec_in = sum(Prec_in)) %>% 
-  rename(waterYear = waterYear2) %>% 
-  ungroup()
-
-ggplot(out.annual %>% filter(between(waterYear,1930,2020)),aes(waterYear,Prec_in)) +
-  geom_line() +
-  geom_smooth() +
-  facet_wrap(~basin)
-
 out.ppt.waterYear1 <- output.ppt %>% group_by(basin,site_no,shape,Shape_Area,waterYear1,Season1) %>% 
   summarize(Prec_in = mean(Prec_in)) %>% 
   ungroup() %>% 
@@ -174,20 +137,14 @@ out.tmean.waterYear1 <- output.tmean %>% group_by(basin,site_no,shape,Shape_Area
 
 ####################################################################################################################
 ####################################################################################################################
-###
+### Sacramento River Above Bend Bridge Near Red Bluff, California
 ####################################################################################################################
 ######################################
 ### get daily flow data
 ######################################
-# 11 long-term gages
-staname <- c('Snoqualmie nr Carnation','NF Snoqualmie','Sauk abv White Chuck','NF Stillaguamish',
-             'Puyallup at Puyallup','Sauk nr Sauk','Naselle','NF Skokomish',
-             # 'Satsop','Wilson','Skykomish','Taylor River nr Selleck','SF Tolt nr Index')
-             'Satsop','Skykomish','Queets')
-staid <- c('12149000','12142000','12186000','12167000',
-           '12101500','12189500','12010000','12056500',
-           # '12035000','14301500','12134500')
-           '12035000','12134500','12040500')
+staid <- c('11377100')
+staname <- c('Sacramento')
+usgs <- data.frame(site_no = staid, basin = staname)
 
 df <- NULL
 PS_drainSqKm <- 0
@@ -218,47 +175,7 @@ for (i in 1:length(staid)){
   basin_info <- bind_rows(INFO,basin_info)
 }
 
-###############################################################
-### patch in Naselle data
-###############################################################
-tmp <- readNWISdv('12010000', "00060")
-tmp <- renameNWISColumns(tmp)
-tmp <- tmp %>% filter(Date>=as.Date("2003-09-30")) %>% transmute(site_no=site_no,Date=Date,Q=Flow/35.3147,Month=month(Date),waterYear=ifelse(month(Date)>9,year(Date)+1,year(Date)),
-                                                                 Qualifier=Flow_cd,station_nm='NASELLE RIVER NEAR NASELLE, WA',basin = 'Naselle')
-df2 <- filter(df,!(site_no == '12010000'&Date>=as.Date("2003-09-30")))
-tmp2 <- filter(df2,site_no == '12010000')
-df <- bind_rows(df2,tmp)
-###############################################################
-# Note there are some substantial data gaps
-# NF and SF Snoqualmie
-df <- filter(df,!(site_no %in% c('12142000','12143400')&waterYear==1990))
-
 df <- left_join(df,basin_info[,c("site_no","drainSqKm")],by="site_no")
-
-df <- mutate(df, Q7s = (Q7/35.3147*86400)/(drainSqKm*1e6)*1000, Q30s = (Q30/35.3147*86400)/(drainSqKm*1e6)*1000)
-
-pk <- df %>% group_by(waterYear,basin,site_no,station_nm,drainSqKm) %>% summarize(pkQ = max(Q,na.rm = TRUE),pkQr = max(((Q*24*60*60)/(drainSqKm*10763910.41671))*12,na.rm=TRUE)) %>% 
-  ungroup()
-
-# missing WYs NF and SF Snoq 1990, MF Snoq 1992
-pk$pkQ <- with(pk,ifelse(waterYear==1990&site_no %in% c('12142000','12143400'),NA,
-                         ifelse(waterYear==1992&site_no %in% c('12141300'),NA,pkQ)
-))
-pk$pkQr <- with(pk,ifelse(waterYear==1990&site_no %in% c('12142000','12143400'),NA,
-                          ifelse(waterYear==1992&site_no %in% c('12141300'),NA,pkQr)
-))
-
-ggplot(pk %>% filter(between(waterYear,1920,2023)),aes(waterYear,pkQ)) + geom_line() + geom_point() +
-  facet_wrap(~station_nm,ncol=2,scales='free_y') +
-  geom_smooth()
-
-# missing WYs NF and SF Snoq 1990, MF Snoq 1992
-df$Q <- with(pk,ifelse(waterYear==1990&site_no %in% c('12142000','12143400'),NA,
-                         ifelse(waterYear==1992&site_no %in% c('12141300'),NA,pkQ)
-))
-df$Qr <- with(pk,ifelse(waterYear==1990&site_no %in% c('12142000','12143400'),NA,
-                          ifelse(waterYear==1992&site_no %in% c('12141300'),NA,pkQr)
-))
 
 outputQ <- df %>%  mutate(Season1 = ifelse(Month %in% c(12,1,2),'DJF_Q',
                                                               ifelse(Month %in% c(3,4,5),'MAM_Q',
@@ -281,36 +198,21 @@ output.waterYear1 <- filter(output.waterYear1,between(waterYear1,1929,2022))
 ########################################################################################################################
 ###
 # sacramento
-# scale.max = 250000
-# scale.int = 50000
-# min.yr = 1950
-# snoqualmie
-scale.max = 125000
-scale.int = 25000
-min.yr = 1930
-# skykomish
-scale.max = 150000
-scale.int = 50000
-min.yr = 1930
-# NF Stillaguamish
-scale.max = 50000
-scale.int = 10000
-min.yr = 1930
+ scale.max = 250000
+ scale.int = 50000
+ min.yr = 1950
 
 ########################################################################################################################
-tmp <- filter(output.waterYear1, site_no == '12149000') # snoqualmie near Carnation
-tmp <- filter(output.waterYear1, site_no == '12134500') # Skykomish
-tmp <- filter(output.waterYear1, site_no == '12167000') # NF Stillaguamish
 tmp <- filter(output.waterYear1, site_no == '11377100') # Sacramento
 tmp <- mutate(tmp, SON_ppt_lag = dplyr::lag(SON_ppt, default = NA),  SON_tmean_lag = dplyr::lag(SON_tmean, default = NA)) %>% 
-  #  filter(between(waterYear1,1949,2019))
-   filter(between(waterYear1,1930,2021))
+    filter(between(waterYear1,1949,2019))
 
 mod <- gamlss(DJF_Q ~ waterYear1 + DJF_ppt + DJF_tmean + SON_ppt_lag + SON_tmean_lag, sigma.formula = DJF_Q ~ waterYear1 + DJF_ppt + DJF_tmean + SON_ppt_lag + SON_tmean_lag, data = tmp, family = GA)
 # mod <- gamlss(pkQ ~ waterYear1, sigma.formula = pkQ ~ waterYear1, data = tmp, family = GA)
 
 ### try stepGAIC ##########
 mod <- stepGAIC(mod)
+mod <- stepGAIC(mod, what = "sigma")
 ###############################
 
 summary(mod)
@@ -349,6 +251,7 @@ mod <- gamlss(MAM_Q ~ waterYear1 + MAM_ppt + MAM_tmean + DJF_ppt + DJF_tmean, si
 
 ### try stepGAIC ##########
 mod <- stepGAIC(mod)
+mod <- stepGAIC(mod, what = "sigma")
 ###############################
 
 summary(mod)
@@ -387,6 +290,7 @@ mod <- gamlss(JJA_Q ~ waterYear1 + JJA_ppt + JJA_tmean + MAM_ppt + MAM_tmean, si
 
 ### try stepGAIC ##########
 mod <- stepGAIC(mod)
+mod <- stepGAIC(mod, what = "sigma")
 ###############################
 
 summary(mod)
@@ -426,6 +330,7 @@ mod <- gamlss(SON_Q ~ waterYear1 + SON_ppt + SON_tmean + JJA_ppt + JJA_tmean, si
 
 ### try stepGAIC ##########
 mod <- stepGAIC(mod)
+mod <- stepGAIC(mod, what = "sigma")
 ###############################
 
 summary(mod)
@@ -500,7 +405,7 @@ for (i in 1:iter){
   pks.annual <- bind_rows(pks.annual,dum)
   pred.pks <- NULL
   
-}
+} 
 rm(dum,pred.pks)
 #########################################################################################################
 pks.annual.centiles <- pks.annual %>% group_by(waterYear1) %>% summarize(c0.05 = quantile(Q, probs = c(0.05)),
@@ -532,15 +437,3 @@ p5 <- ggplot(pks,aes(waterYear1,Q)) + theme_bw() + geom_point(shape = 19, color 
 # plot seasonal observations and predictions
 (p1 + p2)/(p3 + p4)/p5
 
-  
-################################################################################################################################
-pdf.plot(mod)
-histDist(mod$y, "GA")
-# https://stackoverflow.com/questions/75200988/r-gamlss-prediction-of-z-scores-using-regression-with-multiple-explanatory-vari
-params <- predictAll(mod,newdata = tmp)
-c0.95 <- qGA(c(0.95),params$mu,params$sigma)
-c0.75 <- qGA(c(0.75),params$mu,params$sigma)
-c0.5 <- qGA(c(0.5),params$mu,params$sigma)
-c0.25 <- qGA(c(0.25),params$mu,params$sigma)
-c0.05 <- qGA(c(0.05),params$mu,params$sigma)
-#################################################################################################################################
