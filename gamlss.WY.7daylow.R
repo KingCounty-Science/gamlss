@@ -114,15 +114,15 @@ for(shape in file_list){
 output.ppt <- left_join(output.ppt,usgs,by="basin")
 output.tmean <- left_join(output.tmean,usgs,by="basin")
   
-saveRDS(output.ppt, 'output.ppt.rds')
-saveRDS(output.tmean, 'output.tmean.rds')
-output.ppt <- readRDS('output.ppt.rds')
-output.tmean <- readRDS('output.tmean.rds')
+saveRDS(output.ppt, './data/processed/output.ppt.rds')
+saveRDS(output.tmean, './data/processed/output.tmean.rds')
+output.ppt <- readRDS('./data/processed/output.ppt.rds')
+output.tmean <- readRDS('./data/processed/output.tmean.rds')
 
-saveRDS(output.ppt, 'output.ppt.sacramento.rds')
-saveRDS(output.tmean, 'output.tmean.sacramento.rds')
-output.ppt <- readRDS('output.ppt.sacramento.rds')
-output.tmean <- readRDS('output.tmean.sacramento.rds')
+saveRDS(output.ppt, './data/processed/output.ppt.sacramento.rds')
+saveRDS(output.tmean, './data/processed/output.tmean.sacramento.rds')
+output.ppt <- readRDS('./data/processed/output.ppt.sacramento.rds')
+output.tmean <- readRDS('./data/processed/output.tmean.sacramento.rds')
 
 ggplot(output.ppt %>% mutate(Date = as.Date(paste(Year,Month,15,sep="-"))),aes(Date,Prec_in)) +
   geom_line() +
@@ -338,7 +338,7 @@ p2 <- ggplot(tmp2,aes(waterYear2,OND_Q)) + theme_bw() + geom_point(shape = 19, c
   geom_ribbon(aes(ymin = c0.25, ymax = c0.75), fill = "blue", alpha = 0.4) +
   geom_ribbon(aes(ymin = c0.05, ymax = c0.95), fill = "lightblue", alpha = 0.4) +
   # labs(x = "Year", y = "Mean daily discharge maxima (cfs)") +
-  labs(x = "", y = "7-day average discharge minimum (cfs)") +
+  labs(x = "", y = "7-day average discharge minima (cfs)") +
   ggtitle("OND") +
   scale_x_continuous(breaks = seq(min.yr,2020,10)) +
   scale_y_continuous(breaks = seq(0,scale.max,scale.int), limits = c(0,scale.max)) 
@@ -377,7 +377,7 @@ p3 <- ggplot(tmp2,aes(waterYear2,JFM_Q)) + theme_bw() + geom_point(shape = 19, c
   # geom_line(aes(waterYear2,c0.05), color = 'blue') +
   geom_ribbon(aes(ymin = c0.25, ymax = c0.75), fill = "blue", alpha = 0.4) +
   geom_ribbon(aes(ymin = c0.05, ymax = c0.95), fill = "lightblue", alpha = 0.4) +
-  # labs(x = "Year", y = "7-day average discharge minimum (cfs)") +
+  # labs(x = "Year", y = "7-day average discharge minima (cfs)") +
   labs(x = "", y = "") +
   ggtitle("JFM") +
   scale_x_continuous(breaks = seq(min.yr,2020,10)) +
@@ -417,7 +417,7 @@ p4 <- ggplot(tmp2,aes(waterYear2,AMJ_Q)) + theme_bw() + geom_point(shape = 19, c
   # geom_line(aes(waterYear2,c0.05), color = 'blue') +
   geom_ribbon(aes(ymin = c0.25, ymax = c0.75), fill = "blue", alpha = 0.4) +
   geom_ribbon(aes(ymin = c0.05, ymax = c0.95), fill = "lightblue", alpha = 0.4) +
-  labs(x = "Year", y = "7-day average discharge minimum (cfs)") +
+  labs(x = "Year", y = "7-day average discharge minima (cfs)") +
   # labs(x = "Year", y = "") +
   ggtitle("AMJ") +
   scale_x_continuous(breaks = seq(min.yr,2020,10)) +
@@ -531,7 +531,7 @@ p5 <- ggplot(pks,aes(waterYear2,Q)) + theme_bw() + geom_point(shape = 19, color 
   geom_ribbon(aes(ymin = c0.25, ymax = c0.75), fill = "blue", alpha = 0.4) +
   geom_ribbon(aes(ymin = c0.05, ymax = c0.95), fill = "lightblue", alpha = 0.4) +
   # labs(x = "Year", y = "Mean daily discharge maxima (cfs)") +
-  labs(x = "", y = "7-day average discharge minimum (cfs)") +
+  labs(x = "", y = "7-day average discharge minima (cfs)") +
   ggtitle("Annual") +
   scale_x_continuous(breaks = seq(min.yr,2020,10)) +
   scale_y_continuous(breaks = seq(0,scale.max+25000,scale.int), limits = c(0,scale.max)) 
@@ -550,7 +550,7 @@ p7 <- ggplot(pks,aes(waterYear2,Q)) + theme_bw() + geom_point(shape = 19, color 
   geom_ribbon(aes(ymin = c0.05, ymax = c0.95), fill = "lightblue", alpha = 0.4) +
 
     # labs(x = "Year", y = "Mean daily discharge maxima (cfs)") +
-  labs(x = "", y = "7-day average discharge minimum (cfs)") +
+  labs(x = "", y = "7-day average discharge minima (cfs)") +
   ggtitle("Annual") +
   scale_x_continuous(breaks = seq(min.yr,2020,10)) +
   scale_y_continuous(breaks = seq(0,600,100), limits = c(0,600))   
